@@ -128,6 +128,28 @@
         - key: enum.StorageUiKey.Key
           type: StorageBoundUserInterface
 
+  - type: entity
+  parent: BaseSubdermalImplant
+  id: StomachImplant
+  name: stomach implant
+  description: This implant grants hidden storage within a person's stomach using bluespace technology.
+  noSpawn: true
+  components:
+    - type: SubdermalImplant
+      implantAction: StomachImplantVomit
+    - type: Item
+      size: 9999
+    - type: Storage
+      capacity: 30
+    - type: ContainerContainer
+      containers:
+        storagebase: !type:Container
+          ents: [ ]
+    - type: UserInterface
+      interfaces:
+        - key: enum.StorageUiKey.Key
+          type: StorageBoundUserInterface
+
 - type: entity
   parent: BaseSubdermalImplant
   id: FreedomImplant
