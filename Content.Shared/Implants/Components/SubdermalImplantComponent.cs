@@ -42,6 +42,14 @@ public sealed class OpenStorageImplantEvent : InstantActionEvent
 
 }
 
+/// <summary>
+/// Used for vomiting with stomach implant via action.
+/// </summary>
+public sealed class StomachImplantVomitEvent : InstantActionEvent
+{
+
+}
+
 public sealed class UseFreedomImplantEvent : InstantActionEvent
 {
 
