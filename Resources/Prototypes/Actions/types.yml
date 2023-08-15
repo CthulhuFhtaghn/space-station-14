@@ -35,6 +35,17 @@
   event: !type:OpenStorageImplantEvent
 
 - type: instantAction
+  id: StomachImplantVomit
+  name: stomach-implant-vomit-action-name
+  description: stomach-implant-vomit-action-description
+  itemIconStyle: BigAction
+  priority: -20
+  icon:
+    sprite: Clothing/Back/Backpacks/backpack.rsi
+    state: icon
+  event: !type:StomachImplantVomitEvent
+
+- type: instantAction
   id: ActivateMicroBomb
   name: activate-micro-bomb-action-name
   description: activate-micro-bomb-action-description
