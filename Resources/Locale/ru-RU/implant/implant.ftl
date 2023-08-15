@@ -16,6 +16,8 @@ implanter-contained-implant-text = [color=green]{ $desc }[/color]
 
 open-storage-implant-action-name = Открыть имплант Хранилище
 open-storage-implant-action-description = Открывает доступ к хранилищу, спрятанному под вашей кожей.
+stomach-implant-vomit-action-name = Вызвать рвоту
+stomach-implant-vomit-action-description = Вызывает рвоту для доступа к предметом в вашем Расширенном Желудке™
 activate-micro-bomb-action-name = Активировать имплант Микробомба
 activate-micro-bomb-action-description = Активирует вживлённую микробомбу, полностью уничтожая вас и ваше снаряжение.
 use-freedom-implant-action-name = Активировать имплант Свобода
