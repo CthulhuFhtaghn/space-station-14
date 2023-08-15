@@ -28,6 +28,7 @@ public sealed class SubdermalImplantSystem : SharedSubdermalImplantSystem
         SubscribeLocalEvent<StoreComponent, ImplantRelayEvent<AfterInteractUsingEvent>>(OnStoreRelay);
         SubscribeLocalEvent<SubdermalImplantComponent, ActivateImplantEvent>(OnActivateImplantEvent);
         SubscribeLocalEvent<SubdermalImplantComponent, UseDnaScramblerImplantEvent>(OnDnaScramblerImplant);
+        SubscribeLocalEvent<SubdermalImplantComponent, StomachImplantVomitEvent>(OnStomachImplantVomit);
 
     }
 
@@ -71,6 +72,22 @@ public sealed class SubdermalImplantSystem : SharedSubdermalImplantSystem
     }
 
     private void OnDnaScramblerImplant(EntityUid uid, SubdermalImplantComponent component, UseDnaScramblerImplantEvent args)
+    {
+        if (component.ImplantedEntity is not { } ent)
+            return;
+
+        if (TryComp<HumanoidAppearanceComponent>(ent, out var humanoid))
+        {
+            var newProfile = HumanoidCharacterProfile.RandomWithSpecies(humanoid.Species);
+            _humanoidAppearance.LoadProfile(ent, newProfile, humanoid);
+            _metaData.SetEntityName(ent, newProfile.Name);
+            _popup.PopupEntity(Loc.GetString("scramble-implant-activated-popup"), ent, ent);
+        }
+
+        args.Handled = true;
+        QueueDel(uid);
+    }
+    private void OnStomachImplantVomit(EntityUid uid, SubdermalImplantComponent component, StomachImplantVomitEvent args)
     {
         if (component.ImplantedEntity is not { } ent)
             return;
