@@ -121,6 +121,14 @@
       implant: StorageImplant
 
 - type: entity
+  id: StomachImplanter
+  name: stomach implanter
+  parent: BaseImplantOnlyImplanter
+  components:
+    - type: Implanter
+      implant: StomachImplant
+
+- type: entity
   id: FreedomImplanter
   name: freedom implanter
   parent: BaseImplantOnlyImplanter
