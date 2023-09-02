@@ -9,6 +9,7 @@
     sprite: Clothing/Neck/Medals/bronzeheart.rsi
   - type: Clothing
     sprite: Clothing/Neck/Medals/bronzeheart.rsi
+  - type: Medal
 
 - type: entity
   parent: ClothingNeckBase
