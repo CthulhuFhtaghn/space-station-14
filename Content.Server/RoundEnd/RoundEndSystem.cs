@@ -16,6 +16,7 @@ using Robust.Shared.Player;
 using Robust.Shared.Prototypes;
 using Robust.Shared.Timing;
 using Timer = Robust.Shared.Timing.Timer;
+using Content.Server.GameTicking.Rules;
 
 namespace Content.Server.RoundEnd
 {
@@ -41,7 +42,6 @@ namespace Content.Server.RoundEnd
         /// Countdown to use where there is no station alert countdown to be found.
         /// </summary>
         public TimeSpan DefaultCountdownDuration { get; set; } = TimeSpan.FromMinutes(10);
-        public TimeSpan DefaultRestartRoundDuration { get; set; } = TimeSpan.FromMinutes(2);
 
         private CancellationTokenSource? _countdownTokenSource = null;
         private CancellationTokenSource? _cooldownTokenSource = null;
@@ -52,12 +52,19 @@ namespace Content.Server.RoundEnd
 
         public TimeSpan AutoCallStartTime;
         private bool AutoCalledBefore = false;
+        private bool AutoCallEnabled = false;
 
         public override void Initialize()
         {
             base.Initialize();
             SubscribeLocalEvent<RoundRestartCleanupEvent>(_ => Reset());
+            SubscribeLocalEvent<EmergencyShuttleAutoCallStartedEvent>(OnAutoShuttleEnable);
             SetAutoCallTime();
+        }
+
+        private void OnAutoShuttleEnable(EmergencyShuttleAutoCallStartedEvent ev)
+        {
+            AutoCallEnabled = true;
         }
 
         private void SetAutoCallTime()
@@ -83,6 +90,7 @@ namespace Content.Server.RoundEnd
             ExpectedCountdownEnd = null;
             SetAutoCallTime();
             AutoCalledBefore = false;
+            AutoCallEnabled = false;
             RaiseLocalEvent(RoundEndSystemChangedEvent.Default);
         }
 
@@ -138,8 +146,8 @@ namespace Content.Server.RoundEnd
             }
             else
             {
-               time = countdownTime.Minutes;
-               units = "eta-units-minutes";
+                time = countdownTime.Minutes;
+                units = "eta-units-minutes";
             }
 
             if (autoCall)
@@ -201,7 +209,7 @@ namespace Content.Server.RoundEnd
             RaiseLocalEvent(RoundEndSystemChangedEvent.Default);
         }
 
-        public void EndRound()
+        public void EndRound(TimeSpan? countdownTime = null)
         {
             if (_gameTicker.RunLevel != GameRunLevel.InRound) return;
             LastCountdownStart = null;
@@ -210,8 +218,26 @@ namespace Content.Server.RoundEnd
             _gameTicker.EndRound();
             _countdownTokenSource?.Cancel();
             _countdownTokenSource = new();
-            _chatManager.DispatchServerAnnouncement(Loc.GetString("round-end-system-round-restart-eta-announcement", ("minutes", DefaultRestartRoundDuration.Minutes)));
-            Timer.Spawn(DefaultRestartRoundDuration, AfterEndRoundRestart, _countdownTokenSource.Token);
+
+            countdownTime ??= TimeSpan.FromSeconds(_cfg.GetCVar(CCVars.RoundRestartTime));
+            int time;
+            string unitsLocString;
+            if (countdownTime.Value.TotalSeconds < 60)
+            {
+                time = countdownTime.Value.Seconds;
+                unitsLocString = "eta-units-seconds";
+            }
+            else
+            {
+                time = countdownTime.Value.Minutes;
+                unitsLocString = "eta-units-minutes";
+            }
+            _chatManager.DispatchServerAnnouncement(
+                Loc.GetString(
+                    "round-end-system-round-restart-eta-announcement",
+                    ("time", time),
+                    ("units", Loc.GetString(unitsLocString))));
+            Timer.Spawn(countdownTime.Value, AfterEndRoundRestart, _countdownTokenSource.Token);
         }
 
         private void AfterEndRoundRestart()
@@ -235,6 +261,11 @@ namespace Content.Server.RoundEnd
 
         public override void Update(float frameTime)
         {
+            //should've done it in
+            //gamerule system, but I think it'll work for now
+            if (!AutoCallEnabled)
+                return;
+
             // Check if we should auto-call.
             int mins = AutoCalledBefore ? _cfg.GetCVar(CCVars.EmergencyShuttleAutoCallExtensionTime)
                                         : _cfg.GetCVar(CCVars.EmergencyShuttleAutoCallTime);

@@ -1,8 +1,8 @@
-using Content.Server.Mind;
-using Content.Server.Objectives.Interfaces;
 using Content.Server.Shuttles.Systems;
 using Content.Shared.Cuffs.Components;
 using Content.Shared.Zombies;
+using Content.Shared.Mind;
+using Content.Shared.Objectives.Interfaces;
 using JetBrains.Annotations;
 using Robust.Shared.Utility;
 
@@ -10,13 +10,15 @@ namespace Content.Server.Objectives.Conditions
 {
     [UsedImplicitly]
     [DataDefinition]
-    public sealed class EscapeShuttleCondition : IObjectiveCondition
+    public sealed partial class EscapeShuttleCondition : IObjectiveCondition
     {
-        private Mind.Mind? _mind;
+        // TODO refactor all of this to be ecs
+        private MindComponent? _mind;
 
-        public IObjectiveCondition GetAssigned(Mind.Mind mind)
+        public IObjectiveCondition GetAssigned(EntityUid mindId, MindComponent mind)
         {
-            return new EscapeShuttleCondition {
+            return new EscapeShuttleCondition
+            {
                 _mind = mind,
             };
         }
@@ -31,7 +33,7 @@ namespace Content.Server.Objectives.Conditions
         {
             get {
                 var entMan = IoCManager.Resolve<IEntityManager>();
-                var mindSystem = entMan.System<MindSystem>();
+                var mindSystem = entMan.System<SharedMindSystem>();
 
                 if (_mind?.OwnedEntity == null
                     || !entMan.TryGetComponent<TransformComponent>(_mind.OwnedEntity, out var xform))

@@ -28,6 +28,8 @@ public sealed partial class BotanySystem : EntitySystem
     [Dependency] private readonly PopupSystem _popupSystem = default!;
     [Dependency] private readonly IRobustRandom _robustRandom = default!;
     [Dependency] private readonly SolutionContainerSystem _solutionContainerSystem = default!;
+    [Dependency] private readonly MetaDataSystem _metaData = default!;
+    [Dependency] private readonly TransformSystem _transform = default!;
 
     public override void Initialize()
     {
@@ -102,7 +104,7 @@ public sealed partial class BotanySystem : EntitySystem
         var name = Loc.GetString(proto.Name);
         var noun = Loc.GetString(proto.Noun);
         var val = Loc.GetString("botany-seed-packet-name", ("seedName", name), ("seedNoun", noun));
-        MetaData(seed).EntityName = val;
+        _metaData.SetEntityName(seed, val);
 
         // try to automatically place in user's other hand
         _hands.TryPickupAnyHand(user, seed);
@@ -128,7 +130,7 @@ public sealed partial class BotanySystem : EntitySystem
 
         var name = Loc.GetString(proto.DisplayName);
         _popupSystem.PopupCursor(Loc.GetString("botany-harvest-success-message", ("name", name)), user, PopupType.Medium);
-        return GenerateProduct(proto, Transform(user).Coordinates, yieldMod);
+        return GenerateProduct(proto, _transform.GetMoverCoordinates(user), yieldMod);
     }
 
     public IEnumerable<EntityUid> GenerateProduct(SeedData proto, EntityCoordinates position, int yieldMod = 1)
@@ -167,8 +169,9 @@ public sealed partial class BotanySystem : EntitySystem
             if (proto.Mysterious)
             {
                 var metaData = MetaData(entity);
-                metaData.EntityName += "?";
-                metaData.EntityDescription += " " + Loc.GetString("botany-mysterious-description-addon");
+                _metaData.SetEntityName(entity, metaData.EntityName + "?", metaData);
+                _metaData.SetEntityDescription(entity,
+                    metaData.EntityDescription + " " + Loc.GetString("botany-mysterious-description-addon"), metaData);
             }
 
             if (proto.Bioluminescent)
